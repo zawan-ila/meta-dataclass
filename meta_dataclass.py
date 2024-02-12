@@ -28,7 +28,7 @@ class dataclass(type):
 
     @classmethod
     def create_repr(cls, annots):
-        repr_args = ", ".join([f"{i}={{self.{i}}}" for i in annots])
+        repr_args = ", ".join([f"{i}={{repr(self.{i})}}" for i in annots])
         bodylines = f"return f\"{{type(self).__name__}}({repr_args})\""
         code_str = f"def __repr__(self):\n    {bodylines}"
         return cls.create_function(code_str)
