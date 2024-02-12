@@ -13,24 +13,25 @@ class dataclass(type):
             **dict, '__init__': init, '__repr__': repr, '__eq__': eq,
             '__hash__': hsh, '__iter__': it,
         })
+    
+    @classmethod
+    def create_function(cls, code_str):
+        exec(code_str, globals(), d:={})
+        return d.popitem()[1]
 
     @classmethod
     def create_init(cls, annots):
         args = "self" + "".join([f", {i}" for i in annots])
         bodylines = "".join([f"    self.{i} = {i}\n" for i in annots])
         code_str = f"def __init__({args}):\n{bodylines}"
-
-        exec(code_str, globals(), d:={})
-        return d.popitem()[1]
+        return cls.create_function(code_str)
 
     @classmethod
     def create_repr(cls, annots):
         repr_args = ", ".join([f"{i}={{self.{i}}}" for i in annots])
         bodylines = f"return f\"{{type(self).__name__}}({repr_args})\""
         code_str = f"def __repr__(self):\n    {bodylines}"
-
-        exec(code_str, globals(), d:={})
-        return d.popitem()[1]
+        return cls.create_function(code_str)
 
     @classmethod
     def create_eq(cls, annots):
@@ -39,25 +40,19 @@ class dataclass(type):
 
         code_str = f"def __eq__(self, other):\n    if self.__class__ is other.__class__:\n" \
                    f"        return ({own_vals},) == ({other_vals},)\n    return False"
-
-        exec(code_str, globals(), d:={})
-        return d.popitem()[1]
+        return cls.create_function(code_str)
 
     @classmethod
     def create_hash(cls, annots):
         own_vals = ", ".join(f"self.{a}" for a in annots)
         code_str = f"def __hash__(self):\n    return hash(({own_vals},))"
-
-        exec(code_str, globals(), d:={})
-        return d.popitem()[1]
+        return cls.create_function(code_str)
 
     @classmethod
     def create_iter(cls, annots):
         own_vals = ", ".join(f"self.{a}" for a in annots)
         code_str = f"def __iter__(self):\n    return (i for i in ({own_vals},))"
-
-        exec(code_str, globals(), d:={})
-        return d.popitem()[1]
+        return cls.create_function(code_str)
 
     @classmethod
     def parse_annotations(cls, bases, dict):
