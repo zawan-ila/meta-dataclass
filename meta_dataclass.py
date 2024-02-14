@@ -9,7 +9,7 @@ class dataclass(type):
         eq = cls.create_eq(annots)
         it = cls.create_iter(annots)
         hsh = cls.create_hash(annots)
-        return super().__new__(type, name, bases, {
+        return super().__new__(cls, name, bases, {
             **dict, '__init__': init, '__repr__': repr, '__eq__': eq,
             '__hash__': hsh, '__iter__': it,
         })
